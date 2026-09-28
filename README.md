@@ -28,10 +28,10 @@ PayCowClient paycow = new PayCowClient(
 );
 
 CreatePaymentRequest request = CreatePaymentRequest.builder()
-    .userId("player-2048")
+    .userId("customer-2048")
     .amount(new BigDecimal("50.00"))
     .network("TRC20")
-    .idempotencyKey("topup-2048-001")
+    .idempotencyKey("order-2048-001")
     .build();
 
 PaymentSession payment = paycow.createPayment(request);

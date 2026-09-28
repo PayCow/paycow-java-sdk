@@ -29,7 +29,7 @@ final class PayCowClientTest {
             idempotencyHeader.set(exchange.getRequestHeaders().getFirst("Idempotency-Key"));
             sendJson(exchange, "{\"sessionId\":\"session-1\",\"paymentUrl\":\"https://paycow.net/payment/session-1\",\"paymentReference\":\"PAY-1\",\"amountRequested\":50.00,\"payableAmount\":50.001,\"amount\":50.001,\"depositAddress\":\"TAddress\",\"expiresAt\":\"2026-09-16T23:00:00.000Z\"}");
         });
-        server.createContext("/api/payment/status/session-1", exchange -> sendJson(exchange, "{\"sessionId\":\"session-1\",\"userId\":\"player-2048\",\"amountRequested\":50.00,\"payableAmount\":50.001,\"amountReceived\":50.001,\"currencyInfo\":\"USDT\",\"depositNetwork\":\"TRC20\",\"status\":\"PAID\",\"confirmations\":20,\"paymentReference\":\"PAY-1\",\"txHash\":\"tx-1\",\"expiresAt\":\"2026-09-16T23:00:00.000Z\"}"));
+        server.createContext("/api/payment/status/session-1", exchange -> sendJson(exchange, "{\"sessionId\":\"session-1\",\"userId\":\"customer-2048\",\"amountRequested\":50.00,\"payableAmount\":50.001,\"amountReceived\":50.001,\"currencyInfo\":\"USDT\",\"depositNetwork\":\"TRC20\",\"status\":\"PAID\",\"confirmations\":20,\"paymentReference\":\"PAY-1\",\"txHash\":\"tx-1\",\"expiresAt\":\"2026-09-16T23:00:00.000Z\"}"));
         server.start();
         client = new PayCowClient("key", "secret", "http://127.0.0.1:" + server.getAddress().getPort(), Duration.ofSeconds(5));
     }
@@ -42,10 +42,10 @@ final class PayCowClientTest {
     @Test
     void createsAndRetrievesPayment() {
         CreatePaymentRequest request = CreatePaymentRequest.builder()
-            .userId("player-2048")
+            .userId("customer-2048")
             .amount(new BigDecimal("50.00"))
             .network("TRC20")
-            .idempotencyKey("topup-2048-001")
+            .idempotencyKey("order-2048-001")
             .build();
 
         PaymentSession session = client.createPayment(request);
@@ -53,8 +53,8 @@ final class PayCowClientTest {
 
         assertEquals("session-1", session.sessionId());
         assertEquals(new BigDecimal("50.001"), session.payableAmount());
-        assertEquals("topup-2048-001", idempotencyHeader.get());
-        assertTrue(createBody.get().contains("\"idempotencyKey\":\"topup-2048-001\""));
+        assertEquals("order-2048-001", idempotencyHeader.get());
+        assertTrue(createBody.get().contains("\"idempotencyKey\":\"order-2048-001\""));
         assertTrue(status.isPaid());
         assertEquals("tx-1", status.txHash());
     }
